@@ -22,14 +22,14 @@ class PythonRunner {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any -- `typeof PyodideAPI` is not typed
   private _pyodide: any;
   private _initialized: Promise<void>;
-  
+
   constructor() {
     this._output = console.log;
     this._pyodide = null;
 
     this._initialized = this._initialize();
   }
-  
+
   private async _initialize() {
     try {
       this._pyodide = await loadPyodide({
@@ -58,22 +58,32 @@ class PythonRunner {
       throw error;
     }
   }
-  
+
   setOutput(output: (text: string) => void) {
     this._output = output;
   }
-  
+
   async run(code: string) {
     await this._initialized;
     if (this._pyodide) {
       return this._pyodide.runPython(code);
     }
   }
-  
+
   async runAsync(code: string) {
     await this._initialized;
     if (this._pyodide) {
       return this._pyodide.runPythonAsync(code);
+    }
+  }
+
+  /**
+   * Pyodide 패키지 로드
+   */
+  async loadPackage(packageName: string) {
+    await this._initialized;
+    if (this._pyodide) {
+      return this._pyodide.loadPackage(packageName);
     }
   }
 }
