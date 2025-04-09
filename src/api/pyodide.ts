@@ -21,23 +21,29 @@ class PythonRunner {
   private _output: (text: string) => void;
   // eslint-disable-next-line @typescript-eslint/no-explicit-any -- `typeof PyodideAPI` is not typed
   private _pyodide: any;
+  private _initialized: Promise<void>;
+  
   constructor() {
     this._output = console.log;
     this._pyodide = null;
 
-    loadPyodide({
-      /* 불러올 WASM 모듈 경로 (버전포함) */
-      indexURL: "https://cdn.jsdelivr.net/pyodide/v0.27.5/full",
-      /* WASM 모듈 내부 표준 출력 방식 */
-      stdout: (text) => {
-        this._output(text);
-      },
-      /* WASM 모듈 내부 오류 출력 방식 */
-      stderr: (text) => {
-        this._output(text);
-      },
-    }).then((result) => {
-      this._pyodide = result;
+    this._initialized = this._initialize();
+  }
+  
+  private async _initialize() {
+    try {
+      this._pyodide = await loadPyodide({
+        /* 불러올 WASM 모듈 경로 (버전포함) */
+        indexURL: "https://cdn.jsdelivr.net/pyodide/v0.27.5/full",
+        /* WASM 모듈 내부 표준 출력 방식 */
+        stdout: (text) => {
+          this._output(text);
+        },
+        /* WASM 모듈 내부 오류 출력 방식 */
+        stderr: (text) => {
+          this._output(text);
+        },
+      });
 
       console.log(
         this._pyodide.runPython(`
@@ -47,14 +53,27 @@ class PythonRunner {
       );
 
       this._pyodide.runPython('print("Hello from Python!")');
-    });
+    } catch (error) {
+      console.error("Failed to initialize Pyodide:", error);
+      throw error;
+    }
   }
+  
   setOutput(output: (text: string) => void) {
     this._output = output;
   }
-  run(code: string) {
+  
+  async run(code: string) {
+    await this._initialized;
     if (this._pyodide) {
       return this._pyodide.runPython(code);
+    }
+  }
+  
+  async runAsync(code: string) {
+    await this._initialized;
+    if (this._pyodide) {
+      return this._pyodide.runPythonAsync(code);
     }
   }
 }
