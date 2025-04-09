@@ -1,6 +1,7 @@
 import { loadPyodide } from "pyodide";
 
-export const Pyodide = (function () {
+/** Implement Singleton Pattern for Pyodide instance */
+export const pyodide = (function () {
   let instance: PythonRunner | null = null;
   function createInstance() {
     const runner = new PythonRunner();
@@ -23,12 +24,16 @@ class PythonRunner {
   constructor() {
     this._output = console.log;
     this._pyodide = null;
+
     loadPyodide({
+      /* 불러올 WASM 모듈 경로 (버전포함) */
       indexURL: "https://cdn.jsdelivr.net/pyodide/v0.27.5/full",
-      stderr: (text) => {
+      /* WASM 모듈 내부 표준 출력 방식 */
+      stdout: (text) => {
         this._output(text);
       },
-      stdout: (text) => {
+      /* WASM 모듈 내부 오류 출력 방식 */
+      stderr: (text) => {
         this._output(text);
       },
     }).then((result) => {
@@ -53,3 +58,5 @@ class PythonRunner {
     }
   }
 }
+
+export default pyodide.getInstance();

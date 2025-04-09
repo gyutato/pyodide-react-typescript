@@ -1,12 +1,11 @@
 import { useState } from "react";
 import "./App.css";
 
-import { Pyodide } from "./api/pyodide";
+import pyodide from "./api/pyodide";
 
 function App() {
   const [pyprompt, setPyprompt] = useState('print("hello world!")');
   const [pyoutput, setPyoutput] = useState("");
-  const pyodide = Pyodide.getInstance();
 
   return (
     <>
