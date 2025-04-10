@@ -3,16 +3,29 @@ import "./App.css";
 
 import pyodide from "./api/pyodide";
 import { getSetupScript, getLogRankTestScript } from "./scripts";
+import { convertSurvivalDataForLogRank } from "./utils/dataConverter";
+import { largeDataset } from "../datasets/largeSurvival";
 
 function App() {
   const [timeData, setTimeData] = useState("10,15,22\n12,11,14\n8,16,23");
   const [eventData, setEventData] = useState("1,1,1\n0,1,0\n1,0,1");
   const [groupData, setGroupData] = useState("0,0,0\n1,1,1\n0,1,0");
   const [isLoading, setIsLoading] = useState(true);
-  const [pyoutput, setPyoutput] = useState([]);
+  const [pyoutput, setPyoutput] = useState("");
   const [result, setResult] = useState("");
 
   useEffect(() => {
+    // 데이터 변환 및 설정
+    const {
+      timeData: convertedTime,
+      eventData: convertedEvent,
+      groupData: convertedGroup,
+    } = convertSurvivalDataForLogRank(largeDataset);
+
+    setTimeData(convertedTime);
+    setEventData(convertedEvent);
+    setGroupData(convertedGroup);
+
     // Setup output handler
     pyodide.setOutput((text) => {
       setPyoutput((prev) => prev + text + "\n");
